@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+require 'colorize'
+require 'json'
+require 'awesome_print'
+require 'cute_logger'
+
+awesome = true
+
+until ARGV.empty?
+  option = ARGV.shift
+  case option
+  when '--awesome', '-a'
+    awesome = true
+  when '--json', '-j'
+    awesome = false
+  when '--help', '-h'
+    $stderr.puts 'CuteLogger - cute_log'
+    $stderr.puts 'Usage: cat application.log | cute_log [-j|--json|-a|--awesome]'
+    $stderr.puts '  -j, --json     Prints the log using JSON pretty print'
+    $stderr.puts '  -a, --awesome  Prints the log using Awesome print'
+    exit
+  else
+    $stderr.puts "Invalid option: #{option}"
+    exit(-1)
+  end
+end
+
+def format_severity(severity)
+  severity.magenta if severity == 'DEBUG'
+  severity.white if severity == 'INFO'
+  severity.light_yellow if severity == 'WARN'
+  severity.light_red
+end
+
+ARGF.each do |line|
+  matches = line.to_utf8.match(/^(.*?),(.*?),(.*?),(.*?),(.*?),(.+)$/)
+  if matches
+    print "#{matches[1]}".white
+    print " #{format_severity(matches[2])}"
+    print " #{matches[3].to_i(16)}-#{matches[4]}".white
+    print " (#{matches[5]})".blue
+    print "\n"
+    begin
+      json_data = JSON.parse("[#{matches[6]}]").first
+      if json_data.is_a?(String)
+        puts json_data.yellow
+      elsif awesome
+        ap(json_data)
+      else
+        puts JSON.pretty_generate(json_data).yellow
+      end
+    rescue
+      puts matches[6].to_s.red
+    end
+  else
+    puts line.red
+  end
+end
