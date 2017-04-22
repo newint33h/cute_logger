@@ -9,8 +9,11 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Jorge Del Rio']
   spec.email         = ['jdelrios@gmail.com']
 
-  spec.summary       = 'Gem to simplify and centralize the logging process'
-  spec.description   = 'This gem provides methods to log events to an unique place'
+  spec.summary       = 'This gem provides accesible methods for doing the application logging in a simple manner'
+  spec.description   = 'Cute Logger provides globally accesible methods to do the logging. It also provides a' +
+                       ' log parser command for easy view during development. The gem includes mechanisms for' +
+                       ' log rotation, improved exception logging and nice formatted log viewing among many' +
+                       ' other features and best practices.'
   spec.homepage      = 'https://github.com/newint33h/cute_logger'
   spec.license       = 'MIT'
 
