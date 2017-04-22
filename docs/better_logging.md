@@ -8,10 +8,10 @@ One of the main purposes of logging is to be able to debug an application in cas
 
 The main goal is to debug an application in case of error. However, there are many other cases to consider when logging, like how the application can be audited to determine if someone is hacking the system, or responding questions of how many times certain event happen with specific conditions. Or simply determine what changes were made by some employee. In any case, writing the logs in the right format can help you in the future to answer all these questions and more.
 
-##Rules for a good logging system
+## Rules for a good logging system
 Let's look at a couple of good practices that can help us create a good logging system. These are a set of rules that we implemented in our logging gem.
 
-###One line logs
+### One line logs
 Logs that are one line long are perfect for being searched using console commands like `grep` without having to get the lines after and before to understand the log meaning. It is also easier for a log parser to determine where the log starts and ends. The line length can be any size, but one line.
 
 ```
@@ -21,7 +21,7 @@ Logs that are one line long are perfect for being searched using console command
 
 Even if the log content has new line elements by the nature of the data, these are escaped to encapsulate the full log entry in one line.
 
-###Encoded User Input
+### Encoded User Input
 All data that comes from the user must be encoded to avoid messing with special characters. A good format option for encoding the user input is using JSON, because this format does not use RETURNs and escapes special characters. It is important to ensure that the logging function encodes the logs in one charset. UTF-8 is very good choice for general purpose logs, however you should choose the encoding that best fits your needs.
 
 ```
@@ -29,7 +29,7 @@ All data that comes from the user must be encoded to avoid messing with special 
 2016-09-11 14:04:51 -0500,ERROR,17083,3ffbceb4f99c,MyApp,["Something happen",{"result":"Some large text\nmultiline\nline 3"}]
 ```
 
-###Time and Timezone
+### Time and Timezone
 Always log the time in UTC or ensure that your logs contain the correct timezone, and leave the job of displaying the time in local timezone to the tool in charge of visualizing the logs. Having milliseconds in the log's time is very useful to debug logs generated in the same server, unless you have all your servers in sync. As a suggestion, synchronize your servers with a NTP daemon.
 
 ```
@@ -37,7 +37,7 @@ Always log the time in UTC or ensure that your logs contain the correct timezone
 1473620691361,ERROR,17083,3ffbceb4f99c,MyApp,["Something happen",{"result":"Some large text\nmultiline"}]
 ```
 
-###Boilerplate log fields
+### Boilerplate log fields
 There are some fields that always should be present in any log, like the time, severity, process ID, thread ID, and application identifier. The time and severity fields are obvious, but the process ID and thread ID are not. The process ID can identify the logs of an specific application if you are centralizing logs of many servers. Since the process ID values are limited to a short range and can collide among different servers, it is sometimes useful to add an unique machine identifier to the log. The thread ID is useful in any multi-threaded application to identify logs of a thread. In web development this is more important because with this field you can filter the logs corresponding to a single request. And finally the application identifier field is useful for filtering logs in a centralized log database.
 
 All this fields should be abstracted in a log function that the application uses as the default log method. With this approach, the task of adding logs with all this information will be very simple for users o the logging gem.
@@ -48,10 +48,10 @@ All this fields should be abstracted in a log function that the application uses
 ```
 
 
-##Rules for effective logging
+## Rules for effective logging
 Having a gem that implements the mentioned features is not even half of the way to have quality logs. As a developer, we need to follow some rules about how to write logs properly.
 
-###Logging enough information
+### Logging enough information
 A good log must have all the variables needed to read the code and understand what path the execution took. That way, the programmer can reproduce the execution path by reading the log.
 
 ```ruby
@@ -64,7 +64,7 @@ def do_something(id, index, value_x)
 end
 ```
   
-###Multilevel error logs
+### Multilevel error logs
 A good code is divided in different layers that have a specific function. Logging the same log in different layers is a good practice as long as each layer is tagged properly and the information is not duplicated. For example, a service that consults via web service the actual exchange rate of dollars to another currency may have a connection timeout error, and that should log the request exception with the parameters needed to reproduce the error. But it's also possible to create another log entry in an upper layer to indicate that the operation to check the current exchange rate failed. Moreover, it is possible to generate a third log entry in the uppermost layer indicating that the action requested by the user failed. Each layer knows the context in which the execution is taking place, and that knowledge should be reflected in logs.
 
 For the sake of simplicity, I wrote pseudocode with mixed Javascript and Ruby:
@@ -108,7 +108,7 @@ def query_service(value)
 end  
 ```
 
-###Protect confidential information
+### Protect confidential information
 Confidential information must NOT be logged. Instead of logging sensitive information, we must log IDs that a person with authority can relate with the real data. The log registry must be confidential and should be used only by a limited number of people. Avoiding logging confidential information is an always welcome protection to guarantee the privacy of clients and reduce the risk of a data breach.
 
 ```ruby
@@ -119,7 +119,7 @@ log_debug('User balance changed', name: data[:name], account_balance: data[:acco
 log_debug('User balance changed', user_id: data[:user_id], account_balance: data[:account_balance])  
 ```
 
-###Logs everywhere
+### Logs everywhere
 All paths of the code must have a log entry, enough to tell a story of the execution of the application. Very general paths must be logged using INFO severity, and very deep and detailed paths must be logged using DEBUG severity. If a code has a know issue that may affect the users, a log with WARN severity is a good way to keep that issue in the aim.
 
 ```ruby
@@ -142,7 +142,7 @@ rescue => error
 end
 ```
   
-###Global Exception Handler
+### Global Exception Handler
 A global exception handler must be defined to log all exceptions, and this is a log with FATAL severity. This ensures that any problem not foreseen can be logged.
 
 ```ruby
@@ -152,7 +152,7 @@ def global_exeception_handler(error)
 end
 ```
 
-###Countable logs
+### Countable logs
 A good log is something that can be counted. For example, the message that logs the user sign in should only contain "User signin" without any other information in the message. This allows a simple parser to split the log using commas and look for the exact message without worrying about special characters submitted by the user and affecting the parsing. This way, it is possible to generate metrics counting logs. Any additional information that needs to be logged can be added in an additional log fields.
 
 ```ruby
@@ -163,7 +163,7 @@ log_info("User login: #{user_id}")
 log_info('User login', user_id: user_id)
 ```
 
-###Additional log fields
+### Additional log fields
 Almost all logs have a context of execution in which there is at least one object ID that is the protagonist of all the action. That should be logged as an additional field in the log and NOT as part of the message. 
 There may be additional fields that can be considered essential and must always be logged. For example, if an application can only work with a signed user, the log function must always log the signed user by default. Sometimes the application may have very well defined responsibilities and adding a tag may be very useful. For example, an application may want to differentiate among network operations and business rules. The tag NETWORK may be used for logs related to the code that establish the connection with a service, and the tag BUSINESS may be used to log information about the logic in the application.
 
@@ -173,7 +173,7 @@ log_warn('Network failure', tag: 'NETWORK', ...)
 log_warn('Calculating loan interest', tag: 'BUSINESS' loan: loan_id, interest: loan_interest)
 ```
   
-###Log chaining
+### Log chaining
 Design logs to be chainable, in other words, that one log can lead you to identify a bunch of other logs. For example, If you want to know what happened with the request of the person X, first search for the log message 'User signin' of user 'X'. That log must have a thread ID that should allow you to search for all the actions that happened during the request. This way, it is not needed to include the user's name in all logs.
 
 ```ruby
@@ -191,7 +191,7 @@ $ grep "3ffbceb4f99c" application.log
 2016-09-11 14:04:51 -0500,INFO,17083,3ffbceb4f99c,MyApp,["Load Preferences",{"preferences":{"font-size":"34","background-color":"green"}}]  
 ```
 
-###Rethrow vs throw new exceptions
+### Rethrow vs throw new exceptions
 There is a very thin line in between when to throw a new exception and when rethrow the last exception. Rethrow preserves the original message and line code of where the error raised while a new exception may contain different information depending of the context. Both possibilities are valid only when the actual code does not know how to handle the error properly and we need to transfer the responsibility to another part of the application.
 
 Throwing new exception is useful when actual layer has additional information that may be useful for future purposes. Also is a good practice to throw new exception on each application layer, so a person interested in the business logic can filter for the error messages in that layer and have a meaningful error log.
@@ -228,7 +228,7 @@ def a_method(x, y)
 end
 ```
 
-###Error resolution
+### Error resolution
 Many errors can't be resolved by the application itself and require special attention. In these cases, the only solution is to inform the user about the problem and log the error with the proper severity. Some other errors are solved as time passes and some when the services recover itself, and in that case, the solution is to inform the user to try again later. In those examples, the error resolution is handled in the UI layer, and there is the place to catch the exception and log the error.
 
 ```ruby
@@ -242,7 +242,7 @@ get '/users' do
 end  
 ```
 
-###Common ways to group and read logs
+### Common ways to group and read logs
 It is important to keep in mind the usual ways of reading logs, so the programmers can write their logs thinking in how effective they will be.
 
 **Chronological** - Reading the logs sorted by time is the most common way of understanding what is happening, however this may be very hard to read if the logs are mixed with different threads executing the same actions.
@@ -257,7 +257,7 @@ It is important to keep in mind the usual ways of reading logs, so the programme
 
 **ID** - Using custom IDs to identify a resource can help you filter all the logs that has something to do with the given ID.
 
-###Log severities
+### Log severities
 Identify the proper severity for the logs is essential to have an effective problem identification.
 
 **FATAL** is when the immediate intervention is needed and the system can't continue running. (This should raise the alarms somewhere in your office).
@@ -266,7 +266,7 @@ Identify the proper severity for the logs is essential to have an effective prob
 **INFO** is when you need to inform about an important event that is useful to determinate the lifecycle of the execution.
 **DEBUG** is basically anything the programmer want to log to have better visibility of the values of the application in some part of the code.
 
-##Summary
+## Summary
 A lot can be said of how to treat logging in an application, but the idea here was to shed some light on tips and techniques that I have found to be useful to cope with the ever growing amount of information that is being produced by nowadays production systems.
 
 Logging is a difficult task. We feel there is no correct or incorrect approach to logging, and how to implement it correctly depends on the needs of your system. Nevertheless we hope that this brief article provides some useful ideas.
