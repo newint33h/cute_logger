@@ -2,7 +2,7 @@ require 'cute_logger/version'
 require 'logger'
 require 'json'
 require 'awesome_print'
-require_relative 'utf8_enforcer'
+require 'utf8_converter'
 
 # This module defines the functionality the the CuteLogger gem
 module CuteLogger
