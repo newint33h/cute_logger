@@ -56,6 +56,7 @@ module CuteLogger
   end
 
   def self.logger
+    setup unless defined?(@logger)
     @logger
   end
 
