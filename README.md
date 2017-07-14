@@ -152,6 +152,19 @@ $ grep "ERROR" application.log | grep "ID000233" | cute_log
 $ grep "WARN" application.log | grep "2017-01" | cute_log
 ```
 
+### Using environment variables
+
+It is possible to configure the logging settings via environment variables. For example:
+
+```bash
+export CUTE_LOGGER_FILENAME=archive.log
+export CUTE_LOGGER_SHIFT_AGE=7
+export CUTE_LOGGER_SHIFT_SIZE=1000000
+export CUTE_LOGGER_SEVERITY=DEBUG
+```
+
+This is the recommended way to configuring the logger settings.
+
 ## Development
 
 Run `rake test` to run the tests. 

@@ -16,11 +16,11 @@ module CuteLogger
 
   def self.setup(settings = {})
     @logger = Logger.new(
-      settings[:filename] || 'application.log',
-      settings[:shift_age] || 7,
-      settings[:shift_size] || 1024 * 1024 * 1024 # One gigabyte
+      ENV['CUTE_LOGGER_FILENAME'] || settings[:filename] || 'application.log',
+      ENV['CUTE_LOGGER_SHIFT_AGE'] || settings[:shift_age] || 7,
+      ENV['CUTE_LOGGER_SHIFT_SIZE'] || settings[:shift_size] || 1024 * 1024 * 1024 # One gigabyte
     )
-    @logger.sev_threshold = severity(settings[:severity])
+    @logger.sev_threshold = severity(ENV['CUTE_LOGGER_SEVERITY'] || settings[:severity])
     @logger.datetime_format = '%Y-%m-%d %H:%M:%S'
     @logger.formatter = proc do |severity, datetime, progname, msg|
       "#{datetime},#{severity},#{Process.pid.to_s(16)},#{Thread.current.object_id.to_s(16)}" \
