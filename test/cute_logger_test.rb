@@ -17,6 +17,7 @@ class CuteLoggerTest < Minitest::Test
     log_info('A nasty error', id: '123')
     log_info('TestApp') { 'LogC' }
     log_debug('LogD')
+    log_info(nil)
 
     data = File.readlines('application.log')
     assert_match(/LogA/, data[1])
@@ -24,6 +25,7 @@ class CuteLoggerTest < Minitest::Test
     assert_match(/nasty/, data[3])
     assert_match(/TestApp/, data[4])
     assert_match(/LogD/, data[5])
+    assert_match(/null/, data[6])
   end
 
   def test_exception_logging

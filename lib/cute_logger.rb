@@ -113,3 +113,10 @@ class Hash
     Hash[map { |key, value| [key.to_log_format, value.to_log_format] }]
   end
 end
+
+# nil values should be logged as nulls
+class NilClass
+  def to_log_format
+    nil
+  end
+end
