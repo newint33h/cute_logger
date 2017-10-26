@@ -3,61 +3,46 @@ require 'logger'
 require 'json'
 require 'awesome_print'
 require 'utf8_converter'
+require 'cute_logger/default_logger'
 
+##
 # This module defines the functionality the the CuteLogger gem
 module CuteLogger
-  SEVERITY = {
-    'DEBUG' => Logger::DEBUG,
-    'INFO'  => Logger::INFO,
-    'WARN'  => Logger::WARN,
-    'ERROR' => Logger::ERROR,
-    'FATAL' => Logger::FATAL
-  }
-
-  def self.setup(settings = {})
-    @logger = Logger.new(
-      ENV['CUTE_LOGGER_FILENAME'] || settings[:filename] || 'application.log',
-      ENV['CUTE_LOGGER_SHIFT_AGE'] || settings[:shift_age] || 7,
-      ENV['CUTE_LOGGER_SHIFT_SIZE'] || settings[:shift_size] || 1024 * 1024 * 1024 # One gigabyte
-    )
-    @logger.sev_threshold = severity(ENV['CUTE_LOGGER_SEVERITY'] || settings[:severity])
-    @logger.datetime_format = '%Y-%m-%d %H:%M:%S'
-    @logger.formatter = proc do |severity, datetime, progname, msg|
-      "#{datetime},#{severity},#{Process.pid.to_s(16)},#{Thread.current.object_id.to_s(16)}" \
-      ",#{progname},#{msg}\n"
+  class << self
+    def setup(settings = {})
+      @logger = DefaultLogger.new(
+        filename:    ENV['CUTE_LOGGER_FILENAME']    || settings[:filename],
+        shift_age:   ENV['CUTE_LOGGER_SHIFT_AGE']   || settings[:shift_age],
+        shift_size:  ENV['CUTE_LOGGER_SHIFT_SIZE']  || settings[:shift_size],
+        date_format: ENV['CUTE_LOGGER_DATE_FORMAT'] || settings[:date_format],
+        log_level:   ENV['CUTE_LOGGER_LOG_LEVEL']   || settings[:log_level]
+      )
     end
-  end
 
-  def self.severity=(text)
-    @logger.sev_threshold = severity(text)
-  end
-
-  def self.severity(text)
-    return Logger::INFO unless text
-    fail("Unknown logger severity: #{text}") unless SEVERITY[text.upcase]
-    SEVERITY[text.upcase]
-  end
-
-  def self.format_message(message)
-    if message.is_a?(Array) && message.count == 1
-      message.first.to_log_format.to_json
-    else
-      message.to_log_format.to_json
+    def severity=(text)
+      logger.sev_threshold = text
     end
-  end
 
-  def self.log(severity, classname, args, &block)
-    setup unless defined?(@logger)
-    if block_given?
-      @logger.add(severity, nil, (args.first || classname)) { format_message(block.call) }
-    else
-      @logger.add(severity, format_message(args), classname)
+    def kick_logger!(logger)
+      @logger = logger
     end
-  end
 
-  def self.logger
-    setup unless defined?(@logger)
-    @logger
+    def log(severity, classname, args)
+      if block_given?
+        logger.log(severity, classname, args) { yield }
+      else
+        logger.log(severity, classname, args)
+      end
+    end
+
+    def logger
+      setup unless defined?(@logger)
+      @logger
+    end
+
+    def sev_threshold(severity)
+      @loger.sev_threshold(severity)
+    end
   end
 
   # Methods to be included as part of the Object class
@@ -111,5 +96,12 @@ end
 class Hash
   def to_log_format
     Hash[map { |key, value| [key.to_log_format, value.to_log_format] }]
+  end
+end
+
+# nil values should be logged as nulls
+class NilClass
+  def to_log_format
+    nil
   end
 end

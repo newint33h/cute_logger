@@ -1,5 +1,6 @@
+# frozen_string_literal: true
 
 # Partial module to define the version of the gem
 module CuteLogger
-  VERSION = '0.1.9'
+  VERSION = '0.2.0'
 end
