@@ -7,8 +7,8 @@ require 'cute_logger/version'
 Gem::Specification.new do |spec|
   spec.name          = 'cute_logger'
   spec.version       = CuteLogger::VERSION
-  spec.authors       = ['Jorge Del Rio']
-  spec.email         = ['jdelrios@gmail.com']
+  spec.authors       = ['Jorge Del Rio', 'Gilberto Vargas']
+  spec.email         = ['jdelrios@gmail.com', 'tachoguitar@gmail.com']
 
   spec.summary       = 'This gem provides accesible methods for doing the ' \
                        'application logging in a simple manner'
