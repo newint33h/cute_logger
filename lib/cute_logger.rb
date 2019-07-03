@@ -26,6 +26,17 @@ module CuteLogger
       "#{datetime},#{severity},#{Process.pid.to_s(16)},#{Thread.current.object_id.to_s(16)}" \
       ",#{progname},#{msg}\n"
     end
+
+    @signals_read, @signals_write = IO.pipe
+  
+    trap('HUP') { @signals_write.puts('HUP') }
+    
+    Thread.new do
+      while readable_io = IO.select([@signals_read])
+          readable_io.first[0].gets
+          @logger.reopen
+      end
+    end  
   end
 
   def self.severity=(text)
