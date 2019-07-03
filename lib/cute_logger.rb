@@ -29,7 +29,9 @@ module CuteLogger
 
     @signals_read, @signals_write = IO.pipe
   
-    trap('HUP') { @signals_write.puts('HUP') }
+    ['HUP', 'USR1'].each do |signal|
+      Signal.trap(signal) {@signals_write.puts(true)}
+    end
     
     Thread.new do
       while readable_io = IO.select([@signals_read])
