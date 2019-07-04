@@ -21,7 +21,7 @@ module CuteLogger
       ENV['CUTE_LOGGER_SHIFT_SIZE'] || settings[:shift_size] || 1024 * 1024 * 1024 # One gigabyte
     )
     @logger.sev_threshold = severity(ENV['CUTE_LOGGER_SEVERITY'] || settings[:severity])
-    @logger.datetime_format = '%Y-%m-%d %H:%M:%S'
+    @logger.datetime_format = '%Y-%m-%dT%H:%M:%S.%L%z'
     @logger.formatter = proc do |severity, datetime, progname, msg|
       "#{datetime},#{severity},#{Process.pid.to_s(16)},#{Thread.current.object_id.to_s(16)}" \
       ",#{progname},#{msg}\n"
