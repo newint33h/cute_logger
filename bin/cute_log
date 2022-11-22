@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require 'colorize'
 require 'json'
-require 'awesome_print'
+require 'amazing_print'
 require 'cute_logger'
 
 awesome = true

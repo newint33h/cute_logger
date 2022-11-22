@@ -1,25 +1,28 @@
 require 'cute_logger/version'
 require 'logger'
 require 'json'
-require 'awesome_print'
 require 'utf8_converter'
 
 # This module defines the functionality the the CuteLogger gem
 module CuteLogger
   SEVERITY = {
     'DEBUG' => Logger::DEBUG,
-    'INFO'  => Logger::INFO,
-    'WARN'  => Logger::WARN,
+    'INFO' => Logger::INFO,
+    'WARN' => Logger::WARN,
     'ERROR' => Logger::ERROR,
     'FATAL' => Logger::FATAL
   }
 
   def self.setup(settings = {})
-    @logger = Logger.new(
-      ENV['CUTE_LOGGER_FILENAME'] || settings[:filename] || 'application.log',
-      ENV['CUTE_LOGGER_SHIFT_AGE'] || settings[:shift_age] || 7,
-      ENV['CUTE_LOGGER_SHIFT_SIZE'] || settings[:shift_size] || 1024 * 1024 * 1024 # One gigabyte
-    )
+    @logger = if ENV['CUTE_LOGGER_STDOUT']
+                Logger.new($stdout)
+              else
+                Logger.new(
+                  ENV['CUTE_LOGGER_FILENAME'] || settings[:filename] || 'application.log',
+                  ENV['CUTE_LOGGER_SHIFT_AGE'] || settings[:shift_age] || 7,
+                  ENV['CUTE_LOGGER_SHIFT_SIZE'] || settings[:shift_size] || 1024 * 1024 * 1024 # One gigabyte
+                )
+              end
     @logger.sev_threshold = severity(ENV['CUTE_LOGGER_SEVERITY'] || settings[:severity])
     @logger.datetime_format = '%Y-%m-%d %H:%M:%S'
     @logger.formatter = proc do |severity, datetime, progname, msg|
@@ -34,7 +37,8 @@ module CuteLogger
 
   def self.severity(text)
     return Logger::INFO unless text
-    fail("Unknown logger severity: #{text}") unless SEVERITY[text.upcase]
+    raise("Unknown logger severity: #{text}") unless SEVERITY[text.upcase]
+
     SEVERITY[text.upcase]
   end
 

@@ -32,7 +32,7 @@ class CuteLoggerTest < Minitest::Test
     log_info(StandardError.new('ErrorA'))
     begin
       # Triggering an error on purpose
-      x + 1
+      x
       assert(false, 'This line should not run')
     rescue => error
       log_fatal('ErrorB', error)
